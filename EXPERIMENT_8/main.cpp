@@ -49,7 +49,7 @@ int main()
                           {0, 0, 0, 0, 0, 0},
                           {0, 0, 0, 0, 0, 1}};
 
-    cout << "Maximum number of applicants that can get job is "
+    cout << "Maximum number "
          << maxBPM(bpGraph) << endl;
 
     return 0;
