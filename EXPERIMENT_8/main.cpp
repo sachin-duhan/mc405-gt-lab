@@ -1,56 +1,82 @@
-#include <iostream>
+// experiment 10 as per JPG file
+// Ford-Fulkerson algorith in C++
+
+#include <limits.h>
 #include <string.h>
+
+#include <iostream>
+#include <queue>
 using namespace std;
 
-#define M 6
-#define N 6
+#define V 6
 
-bool bpm(bool bpGraph[M][N], int u,
-         bool seen[], int matchR[])
-{
-    for (int v = 0; v < N; v++)
-    {
-        if (bpGraph[u][v] && !seen[v])
-        {
-            seen[v] = true;
-            if (matchR[v] < 0 || bpm(bpGraph, matchR[v],
-                                     seen, matchR))
-            {
-                matchR[v] = u;
-                return true;
-            }
-        }
+// Using BFS as a searching algorithm
+bool bfs(int rGraph[V][V], int s, int t, int parent[]) {
+  bool visited[V];
+  memset(visited, 0, sizeof(visited));
+
+  queue<int> q;
+  q.push(s);
+  visited[s] = true;
+  parent[s] = -1;
+
+  while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+
+    for (int v = 0; v < V; v++) {
+      if (visited[v] == false && rGraph[u][v] > 0) {
+        q.push(v);
+        parent[v] = u;
+        visited[v] = true;
+      }
     }
-    return false;
+  }
+
+  return (visited[t] == true);
 }
 
-int maxBPM(bool bpGraph[M][N])
-{
-    int matchR[N];
-    memset(matchR, -1, sizeof(matchR));
+// Applying fordfulkerson algorithm
+int fordFulkerson(int graph[V][V], int s, int t) {
+  int u, v;
 
-    int result = 0;
-    for (int u = 0; u < M; u++)
-    {
-        bool seen[N];
-        memset(seen, 0, sizeof(seen));
-        if (bpm(bpGraph, u, seen, matchR))
-            result++;
+  int rGraph[V][V];
+  for (u = 0; u < V; u++)
+    for (v = 0; v < V; v++)
+      rGraph[u][v] = graph[u][v];
+
+  int parent[V];
+  int max_flow = 0;
+
+  // Updating the residual values of edges
+  while (bfs(rGraph, s, t, parent)) {
+    int path_flow = INT_MAX;
+    for (v = t; v != s; v = parent[v]) {
+      u = parent[v];
+      path_flow = min(path_flow, rGraph[u][v]);
     }
-    return result;
+
+    for (v = t; v != s; v = parent[v]) {
+      u = parent[v];
+      rGraph[u][v] -= path_flow;
+      rGraph[v][u] += path_flow;
+    }
+
+    // Adding the path flows
+    max_flow += path_flow;
+  }
+
+  return max_flow;
 }
 
-int main()
-{
-    bool bpGraph[M][N] = {{0, 1, 1, 0, 0, 0},
-                          {1, 0, 0, 1, 0, 0},
-                          {0, 0, 1, 0, 0, 0},
-                          {0, 0, 1, 1, 0, 0},
-                          {0, 0, 0, 0, 0, 0},
-                          {0, 0, 0, 0, 0, 1}};
+int main() {
+  int graph[V][V] = {{0, 8, 0, 0, 3, 0},
+             {0, 0, 9, 0, 0, 0},
+             {0, 0, 0, 0, 7, 2},
+             {0, 0, 0, 0, 0, 5},
+             {0, 0, 7, 4, 0, 0},
+             {0, 0, 0, 0, 0, 0}};
 
-    cout << "Maximum number "
-         << maxBPM(bpGraph) << endl;
-
-    return 0;
+  cout << "Max Flow: " << fordFulkerson(graph, 0, 5) << endl;
 }
+
